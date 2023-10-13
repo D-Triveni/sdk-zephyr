@@ -676,9 +676,11 @@ static int wifi_mode(uint32_t mgmt_request, struct net_if *iface,
 	}
 
 	if (wifi_mgmt_api == NULL || wifi_mgmt_api->mode == NULL) {
+		LOG_ERR("mode command API is not available\n");
 		return -ENOTSUP;
 	}
 
+	LOG_ERR("invoking mode command from wifi_mgmt\n");
 	return wifi_mgmt_api->mode(dev, mode_info);
 }
 
