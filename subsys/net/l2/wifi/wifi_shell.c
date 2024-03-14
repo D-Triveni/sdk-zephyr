@@ -1817,6 +1817,24 @@ static int cmd_wifi_version(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
+static int cmd_wifi_test(const struct shell *sh, size_t argc, char *argv[])
+{
+	struct net_if *iface = net_if_get_first_wifi();
+
+	if (argc < 2 && argc > 2) {
+                PR_WARNING("Invalid number of arguments\n");
+                return -ENOEXEC;
+        }
+
+	PR("String to be printed:%s\n",  argv[1]);
+	if (net_mgmt(NET_REQUEST_WIFI_TEST, iface, argv[1], strlen(argv[1]))) {
+		PR_WARNING("Failed to print the string\n");
+		return -ENOEXEC;
+	}
+
+	return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(wifi_cmd_ap,
 	SHELL_CMD_ARG(disable, NULL,
 		  "Disable Access Point mode.\n",
@@ -1899,6 +1917,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(wifi_commands,
 		      cmd_wifi_ps_mode,
 		      2,
 		      0),
+	SHELL_CMD_ARG(test, NULL, "Print the given string\n", cmd_wifi_test, 2, 0),
 	SHELL_CMD_ARG(scan, NULL,
 		  "Scan for Wi-Fi APs\n"
 		    "[-t, --type <active/passive>] : Preferred mode of scan. The actual mode of scan can depend on factors such as the Wi-Fi chip implementation, regulatory domain restrictions. Default type is active\n"

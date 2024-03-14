@@ -85,6 +85,7 @@ enum net_request_wifi_cmd {
 	NET_REQUEST_WIFI_CMD_AP_STA_DISCONNECT,
 	/** Get Wi-Fi driver and Firmware versions */
 	NET_REQUEST_WIFI_CMD_VERSION,
+	NET_REQUEST_WIFI_CMD_TEST,
 	NET_REQUEST_WIFI_CMD_MAX
 };
 
@@ -171,6 +172,11 @@ NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_AP_STA_DISCONNECT);
 	(_NET_WIFI_BASE | NET_REQUEST_WIFI_CMD_VERSION)
 
 NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_VERSION);
+
+#define NET_REQUEST_WIFI_TEST			\
+	(_NET_WIFI_BASE | NET_REQUEST_WIFI_CMD_TEST)
+
+NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_TEST);
 
 /** Wi-Fi management events */
 enum net_event_wifi_cmd {
@@ -852,6 +858,7 @@ struct wifi_mgmt_ops {
 	 * @return 0 if ok, < 0 if error
 	 */
 	int (*get_version)(const struct device *dev, struct wifi_version *params);
+	int (*print_test)(const struct device *dev, char *str);
 };
 
 /** Wi-Fi management offload API */

@@ -719,6 +719,23 @@ static int wifi_get_version(uint32_t mgmt_request, struct net_if *iface,
 
 NET_MGMT_REGISTER_REQUEST_HANDLER(NET_REQUEST_WIFI_VERSION, wifi_get_version);
 
+static int wifi_test(uint32_t mgmt_request, struct net_if *iface,
+				void *data, size_t len)
+{
+	const struct device *dev = net_if_get_device(iface);
+	const struct wifi_mgmt_ops *const wifi_mgmt_api = get_wifi_api(iface);
+	char *test = (char *)data;
+
+	if (wifi_mgmt_api == NULL || wifi_mgmt_api->print_test == NULL) {
+                return -ENOTSUP;
+        }
+
+	LOG_INF("String to be printed:%s", test);
+	return wifi_mgmt_api->print_test(dev, test);
+}
+
+NET_MGMT_REGISTER_REQUEST_HANDLER(NET_REQUEST_WIFI_TEST, wifi_test);
+
 #ifdef CONFIG_WIFI_MGMT_RAW_SCAN_RESULTS
 void wifi_mgmt_raise_raw_scan_result_event(struct net_if *iface,
 					   struct wifi_raw_scan_result *raw_scan_result)
