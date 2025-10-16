@@ -620,6 +620,7 @@ static int __wifi_args_to_params(const struct shell *sh, size_t argc, char *argv
 		{"ignore-broadcast-ssid", required_argument, 0, 'g'},
 		{"ieee-80211r", no_argument, 0, 'R'},
 		{"iface", required_argument, 0, 'i'},
+		{"domain_suffix_match", required_argument, 0, 'd'},
 		{"help", no_argument, 0, 'h'},
 		{0, 0, 0, 0}};
 	char *endptr;
@@ -871,6 +872,10 @@ static int __wifi_args_to_params(const struct shell *sh, size_t argc, char *argv
 			break;
 		case 'i':
 			/* Unused, but parsing to avoid unknown option error */
+			break;
+		case 'd':
+			params->domain_suffix_match = state->optarg;
+			params->domain_suffix_length = strlen(params->domain_suffix_match);
 			break;
 		case 'h':
 			return -ENOEXEC;
@@ -3921,6 +3926,7 @@ SHELL_SUBCMD_ADD((wifi), connect, NULL,
 		 "[-P, --eap-pwd1]: Client Password.\n"
 		 "Default no password for eap user.\n"
 		 "[-R, --ieee-80211r]: Use IEEE80211R fast BSS transition connect."
+		 "[-d, --domain_suffix_match] : Domain suffix match value.\n"
 		 "[-h, --help]: Print out the help for the connect command.\n"
 		 "[-i, --iface=<interface index>] : Interface index.\n",
 		 cmd_wifi_connect,

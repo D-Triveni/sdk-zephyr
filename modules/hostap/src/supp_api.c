@@ -970,6 +970,13 @@ static int wpas_add_and_config_network(struct wpa_supplicant *wpa_s,
 				goto out;
 			}
 
+			if (params->domain_suffix_length > 0) {
+				if (!wpa_cli_cmd_v("set_network %d domain_suffix_match \"%s\"",
+						   resp.network_id, params->domain_suffix_match)) {
+					goto out;
+				}
+			}
+
 			if (false == ((params->security == WIFI_SECURITY_TYPE_EAP_PEAP_MSCHAPV2 ||
 			    params->security == WIFI_SECURITY_TYPE_EAP_TTLS_MSCHAPV2) &&
 			    (!params->verify_peer_cert))) {

@@ -716,6 +716,12 @@ struct wifi_connect_req_params {
 	uint8_t ignore_broadcast_ssid;
 	/** Parameter used for frequency band */
 	enum wifi_frequency_bandwidths bandwidth;
+
+	/** Domain suffix match
+	 *
+	 */
+	const uint8_t *domain_suffix_match;
+	uint8_t domain_suffix_length; /* Max 32 */
 };
 
 /** @brief Wi-Fi disconnect reason codes. To be overlaid on top of \ref wifi_status
