@@ -141,6 +141,8 @@ enum net_request_wifi_cmd {
 	NET_REQUEST_WIFI_CMD_BGSCAN,
 	/** Wi-Fi Direct (P2P) operations*/
 	NET_REQUEST_WIFI_CMD_P2P_OPER,
+	/** Get PMKSA cache entries */
+	NET_REQUEST_WIFI_CMD_PMKSA_GET,
 	/** @cond INTERNAL_HIDDEN */
 	NET_REQUEST_WIFI_CMD_MAX
 	/** @endcond */
@@ -293,6 +295,14 @@ NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_DPP);
 #define NET_REQUEST_WIFI_BTM_QUERY (NET_WIFI_BASE | NET_REQUEST_WIFI_CMD_BTM_QUERY)
 
 NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_BTM_QUERY);
+
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+/** Request Wi-Fi PMKSA cache entries */
+#define NET_REQUEST_WIFI_PMKSA_GET						\
+	(NET_WIFI_BASE | NET_REQUEST_WIFI_CMD_PMKSA_GET)
+
+NET_MGMT_DEFINE_REQUEST_HANDLER(NET_REQUEST_WIFI_PMKSA_GET);
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
 
 /** Request a Wi-Fi PMKSA cache entries flush */
 #define NET_REQUEST_WIFI_PMKSA_FLUSH                           \
@@ -1441,6 +1451,19 @@ struct wifi_dpp_params {
 };
 #endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_DPP */
 
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+/** Maximum length of the PMKSA cache entries string returned by PMKSA_GET */
+#define WIFI_PMKSA_GET_RESP_MAX_LEN 512
+
+/** Wi-Fi PMKSA get params */
+struct wifi_pmksa_get_params {
+	/** Response buffer filled with PMKSA cache entries, one per line, each
+	 * formatted as "<BSSID> <PMKID> <PMK> <reauth_s> <expiration_s> <akmp>"
+	 */
+	char resp[WIFI_PMKSA_GET_RESP_MAX_LEN + 1];
+};
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
+
 #define WIFI_WPS_PIN_MAX_LEN 8
 
 /** Operation for WPS */
@@ -1915,6 +1938,16 @@ struct wifi_mgmt_ops {
 	 * @return 0 if ok, < 0 if error
 	 */
 	int (*pmksa_flush)(const struct device *dev);
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+	/** Get PMKSA cache entries for a network
+	 *
+	 * @param dev Pointer to the device structure for the driver instance.
+	 * @param params PMKSA get parameters (response buffer).
+	 *
+	 * @return 0 if ok, < 0 if error
+	 */
+	int (*pmksa_get)(const struct device *dev, struct wifi_pmksa_get_params *params);
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
 	/** Set Wi-Fi enterprise mode CA/client Cert and key
 	 *
 	 * @param dev Pointer to the device structure for the driver instance.

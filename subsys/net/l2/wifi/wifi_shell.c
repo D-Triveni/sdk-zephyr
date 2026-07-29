@@ -4211,6 +4211,30 @@ static int cmd_wifi_pmksa_flush(const struct shell *sh, size_t argc, char *argv[
 	return 0;
 }
 
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+static int cmd_wifi_pmksa_get(const struct shell *sh, size_t argc, char *argv[])
+{
+	struct net_if *iface = get_iface(IFACE_TYPE_STA, argc, argv);
+	struct wifi_pmksa_get_params params = {0};
+
+	context.sh = sh;
+
+	if (net_mgmt(NET_REQUEST_WIFI_PMKSA_GET, iface, &params, sizeof(params))) {
+		PR_WARNING("Get PMKSA cache entries failed\n");
+		return -ENOEXEC;
+	}
+
+	if (params.resp[0] == '\0') {
+		PR("No PMKSA cache entries\n");
+	} else {
+		PR("BSSID PMKID PMK reauth(s) expiration(s) akmp\n");
+		PR("%s", params.resp);
+	}
+
+	return 0;
+}
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
+
 static int cmd_wifi_set_bss_max_idle_period(const struct shell *sh, size_t argc, char *argv[])
 {
 	struct net_if *iface = get_iface(IFACE_TYPE_STA, argc, argv);
@@ -4847,6 +4871,14 @@ SHELL_SUBCMD_ADD((wifi), packet_filter, NULL,
 			    "wifi packet_filter -i1 -md"),
 		 cmd_wifi_packet_filter,
 		 2, 10);
+
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+SHELL_SUBCMD_ADD((wifi), pmksa_get, NULL,
+		 SHELL_HELP("Get cached PMKSA entries",
+			    "[-i, --iface=<interface index>]"),
+		 cmd_wifi_pmksa_get,
+		 1, 2);
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
 
 SHELL_SUBCMD_ADD((wifi), pmksa_flush, NULL,
 		 SHELL_HELP("Flush PMKSA cache entries",

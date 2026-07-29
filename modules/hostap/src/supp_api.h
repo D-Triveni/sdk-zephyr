@@ -112,6 +112,15 @@ int supplicant_reset_stats(const struct device *dev);
  */
 int supplicant_pmksa_flush(const struct device *dev);
 
+/** Get PMKSA cache entries for a network
+ *
+ * @param dev Pointer to the device structure for the driver instance.
+ * @param params PMKSA get parameters (response buffer).
+ *
+ * @return 0 if ok, < 0 if error
+ */
+int supplicant_pmksa_get(const struct device *dev, struct wifi_pmksa_get_params *params);
+
 /** Set or get 11K status
  *
  * @param dev Pointer to the device structure for the driver instance.

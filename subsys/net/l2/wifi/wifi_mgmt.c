@@ -1401,6 +1401,32 @@ static int wifi_pmksa_flush(uint64_t mgmt_request, struct net_if *iface,
 
 NET_MGMT_REGISTER_REQUEST_HANDLER(NET_REQUEST_WIFI_PMKSA_FLUSH, wifi_pmksa_flush);
 
+#ifdef CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL
+static int wifi_pmksa_get(uint64_t mgmt_request, struct net_if *iface,
+					   void *data, size_t len)
+{
+	const struct device *dev = net_if_get_device(iface);
+	const struct wifi_mgmt_ops *const wifi_mgmt_api = get_wifi_api(iface);
+	struct wifi_pmksa_get_params *params = data;
+
+	if (wifi_mgmt_api == NULL || wifi_mgmt_api->pmksa_get == NULL) {
+		return -ENOTSUP;
+	}
+
+	if (!net_if_is_admin_up(iface)) {
+		return -ENETDOWN;
+	}
+
+	if (!data || len != sizeof(*params)) {
+		return -EINVAL;
+	}
+
+	return wifi_mgmt_api->pmksa_get(dev, params);
+}
+
+NET_MGMT_REGISTER_REQUEST_HANDLER(NET_REQUEST_WIFI_PMKSA_GET, wifi_pmksa_get);
+#endif /* CONFIG_WIFI_NM_WPA_SUPPLICANT_EAPOL */
+
 static int wifi_config_params(uint64_t mgmt_request, struct net_if *iface,
 				 void *data, size_t len)
 {

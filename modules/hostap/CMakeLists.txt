@@ -47,6 +47,7 @@ zephyr_library_compile_definitions(
   CONFIG_CTRL_IFACE_ZEPHYR
   CONFIG_SUITEB192
   CONFIG_SUITEB
+  CONFIG_PMKSA_CACHE_EXTERNAL
 )
 
 # Though MbedTLS is not FIPS compliant, CONFIG_FIPS is used here to strip the

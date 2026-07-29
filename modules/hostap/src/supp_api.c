@@ -30,6 +30,8 @@
 #include "hostapd.h"
 #include "hapd_api.h"
 #include "wpa_supplicant/bss.h"
+#include "rsn_supp/wpa.h"
+#include "rsn_supp/pmksa_cache.h"
 
 extern struct k_sem wpa_supplicant_ready_sem;
 extern struct wpa_global *global;
@@ -1673,6 +1675,77 @@ int supplicant_pmksa_flush(const struct device *dev)
 		ret = -1;
 		wpa_printf(MSG_ERROR, "pmksa_flush failed");
 		goto out;
+	}
+
+out:
+	k_mutex_unlock(&wpa_supplicant_mutex);
+	return ret;
+}
+
+int supplicant_pmksa_get(const struct device *dev, struct wifi_pmksa_get_params *params)
+{
+	struct wpa_supplicant *wpa_s;
+	struct rsn_pmksa_cache_entry *entry;
+	struct os_reltime now;
+	char *pos, *end;
+	int ret = 0;
+
+	if (params == NULL) {
+		return -EINVAL;
+	}
+
+	k_mutex_lock(&wpa_supplicant_mutex, K_FOREVER);
+
+	wpa_s = get_wpa_s_handle(dev);
+	if (!wpa_s) {
+		ret = -1;
+		wpa_printf(MSG_ERROR, "Device %s not found", dev->name);
+		goto out;
+	}
+
+	params->resp[0] = '\0';
+	pos = params->resp;
+	end = params->resp + sizeof(params->resp);
+
+	os_get_reltime(&now);
+
+	/*
+	 * Read the supplicant PMKSA cache directly instead of using the
+	 * "PMKSA_GET <network id>" control command. That command filters
+	 * entries by network_ctx pointer equality, which does not match on
+	 * this port, so iterate the cache and report every entry.
+	 *
+	 * Entry format (one per line):
+	 * <BSSID> <PMKID> <PMK> <reauth in s> <expiration in s> <akmp>
+	 */
+	for (entry = wpa_sm_pmksa_cache_head(wpa_s->wpa); entry != NULL;
+	     entry = entry->next) {
+		int written;
+
+		written = os_snprintf(pos, end - pos, MACSTR " ", MAC2STR(entry->aa));
+		if (os_snprintf_error(end - pos, written)) {
+			break;
+		}
+		pos += written;
+
+		pos += wpa_snprintf_hex(pos, end - pos, entry->pmkid, PMKID_LEN);
+
+		written = os_snprintf(pos, end - pos, " ");
+		if (os_snprintf_error(end - pos, written)) {
+			break;
+		}
+		pos += written;
+
+		pos += wpa_snprintf_hex(pos, end - pos, entry->pmk, entry->pmk_len);
+
+		written = os_snprintf(pos, end - pos, " %d %d %d\n",
+				      (int)(entry->reauth_time - now.sec),
+				      (int)(entry->expiration - now.sec),
+				      entry->akmp);
+		if (os_snprintf_error(end - pos, written)) {
+			break;
+		}
+		pos += written;
 	}
 
 out:
